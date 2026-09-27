@@ -73,7 +73,7 @@ max_price (float) — upper price bound, e.g. 30.0
 - **Inputs:**
 new_item (dict) — a single listing dict, same shape as one entry returned by search_listings
 wardrobe (dict) — matches data/wardrobe_schema.json: {"items": [...]}, where each item has id (str), name (str), category (str — one of tops, bottoms, outerwear, shoes, accessories), colors (list of str), style_tags (list of str), notes (str or None). Note this is wardrobe["items"], not the wardrobe itself as a bare list.
-- **Returns:** A list of outfit-idea strings (str), each describing one way to wear the new item with existing wardrobe pieces.
+- **Returns:** A string describing one way to wear the new item with existing wardrobe pieces.
 - **When it has nothing:** If wardrobe["items"] is an empty list (the empty_wardrobe case in the schema file — the expected shape for a new user), returns general styling advice for the item instead of failing — still a list of strings, just not wardrobe-specific.
 
 ### `create_fit_card`
