@@ -54,11 +54,10 @@ Given a query that matches no listings, the agent stops before calling
      compares session["selected_item"] against what actually reached
      suggest_outfit is the shape you're after. -->
 
-
+Given a matching query, session["selected_item"] and the item received by suggest_outfit are identical in 5 of 5 tries.
 
 **Why this target:**
-
-
+The selected item should not change between the search and outfit-generation steps. Because the agent stores the selected listing in session state and then passes it to the next tool, this should be deterministic rather than dependent on model wording.
 
 ---
 
@@ -74,11 +73,11 @@ Given a query that matches no listings, the agent stops before calling
      mentions the price? Two different items producing the same opening
      sentence? A card longer than a caption anyone would post? Any of those can
      be turned into a number. -->
-
+For 5 different fit cards, the selected item's name appears in 5 of 5 cards.
 
 
 **Why this target:**
-
+The fit card is generated from the selected item, so identifying the item is a basic requirement for making the recommendation useful. The wording of the card can vary because it is model-generated, but the item name is an observable field that should remain consistent.
 
 
 ---
@@ -91,11 +90,11 @@ Given a query that matches no listings, the agent stops before calling
      wardrobe path, what happens when the model can't be reached, whether the
      search respects a price ceiling — anything, as long as it names a number
      or an observable outcome. -->
-
+Given an empty wardrobe, the agent returns at least 1 general styling suggestion in 5 of 5 tries.
 
 
 **Why this target:**
-
+An empty wardrobe should not prevent the agent from providing useful styling advice. Since suggest_outfit is designed to return general advice when no wardrobe items are available, testing 5 of 5 tries checks that this fallback path consistently produces a usable recommendation.
 
 
 ---
