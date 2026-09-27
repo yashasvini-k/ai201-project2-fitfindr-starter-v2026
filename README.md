@@ -41,7 +41,7 @@
 
 <!-- Three or four sentences: what a user asks for, and what they get back. -->
 
-
+A user describes something they want to find while thrifting — an item type, a size, and a price ceiling, e.g. "a vintage graphic tee under $30, size M." FitFindr searches the listings data for matches, picks a candidate, and works out what it would pair with from a wardrobe. It returns a short, postable caption (a "fit card") describing the item and how to style it. If nothing matches the search, it stops and tells the user what to change instead of guessing.
 
 ---
 
@@ -59,24 +59,32 @@
 
 ### `search_listings`
 
-- **What it does:**
+- **What it does:** Filters data/listings.json down to items whose title, description, or style_tags match a text description, whose size matches (or contains) the requested size, and whose price is at or below a maximum.
 - **Inputs:** <!-- name and type each: `max_price` (float), not "a price" -->
-- **Returns:**
-- **When it has nothing:**
+description (str) — free-text search term, e.g. "vintage graphic tee", matched against title / description / style_tags
+size (str) — size to match, e.g. "M" — note sizes in the data aren't uniform ("W30 L30", "S/M", "One Size", "US 8"), so this needs to be a substring/contains check, not exact-equals
+max_price (float) — upper price bound, e.g. 30.0
+- **Returns:** A list of listing dicts, each with id (str), title (str), description (str), category (str), style_tags (list of str), size (str), condition (str), price (float), colors (list of str), brand (str or None), platform (str).
+- **When it has nothing:** An empty list ([]). Never None, never an exception.
 
 ### `suggest_outfit`
 
-- **What it does:**
+- **What it does:** Takes one listing dict (usually the top search result) and a wardrobe, and returns outfit pairing ideas using the model — likely reasoning over category, colors, and style_tags on both the new item and each wardrobe item to suggest complementary pieces.
 - **Inputs:**
-- **Returns:**
-- **When it has nothing:**
+new_item (dict) — a single listing dict, same shape as one entry returned by search_listings
+wardrobe (dict) — matches data/wardrobe_schema.json: {"items": [...]}, where each item has id (str), name (str), category (str — one of tops, bottoms, outerwear, shoes, accessories), colors (list of str), style_tags (list of str), notes (str or None). Note this is wardrobe["items"], not the wardrobe itself as a bare list.
+- **Returns:** A list of outfit-idea strings (str), each describing one way to wear the new item with existing wardrobe pieces.
+- **When it has nothing:** If wardrobe["items"] is an empty list (the empty_wardrobe case in the schema file — the expected shape for a new user), returns general styling advice for the item instead of failing — still a list of strings, just not wardrobe-specific.
 
 ### `create_fit_card`
 
-- **What it does:**
+
+- **What it does:** Writes a short, postable caption combining the outfit ideas and the new item (using title, brand when present, colors) into something a person would actually caption a photo with.
 - **Inputs:**
-- **Returns:**
-- **When it has nothing:**
+outfit (list of str) — the output of suggest_outfit
+new_item (dict) — the same listing dict passed to suggest_outfit
+- **Returns:** A single string — the caption text.
+- **When it has nothing:** If outfit is an empty list, returns a caption built from new_item alone (title, brand if not None, colors) rather than failing.
 
 ---
 
@@ -93,13 +101,13 @@
      The grader checks your code against what you claim here, so the file and
      function have to be real. -->
 
-**Branch rule:**
+**Branch rule:** If search_listings returns an empty list, put a message in session["message"] naming what the user could change (e.g. try a higher price ceiling or a different size), leave session["fit_card"] as None, and stop before calling suggest_outfit. Otherwise, take the first item in the results, store it in session["selected_item"], and continue to suggest_outfit and then create_fit_card.
 
 **Where it lives:** `agent.py::run_agent`
 
 **How the query is parsed:** <!-- regex, string splitting, or asking the model — say which -->
 
-**What moves through the session:** <!-- which fields, in what order -->
+**What moves through the session:** <!-- which fields, in what order -->session["selected_item"] (the listing dict search_listings chose) flows into suggest_outfit; session["outfit"] (its return value) flows into create_fit_card; session["fit_card"] holds the final caption, or None plus session["message"] on the empty-search path.
 
 ---
 
