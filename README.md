@@ -73,7 +73,7 @@ max_price (float) — upper price bound, e.g. 30.0
 - **Inputs:**
 new_item (dict) — a single listing dict, same shape as one entry returned by search_listings
 wardrobe (dict) — matches data/wardrobe_schema.json: {"items": [...]}, where each item has id (str), name (str), category (str — one of tops, bottoms, outerwear, shoes, accessories), colors (list of str), style_tags (list of str), notes (str or None). Note this is wardrobe["items"], not the wardrobe itself as a bare list.
-- **Returns:** A string describing one way to wear the new item with existing wardrobe pieces.
+- **Returns:** A single non-empty string — the outfit suggestion prose, which may describe more than one outfit within that one string (e.g. two labeled options separated by newlines).
 - **When it has nothing:** If wardrobe["items"] is an empty list (the empty_wardrobe case in the schema file — the expected shape for a new user), returns general styling advice for the item instead of failing — still a list of strings, just not wardrobe-specific.
 
 ### `create_fit_card`
@@ -84,7 +84,7 @@ wardrobe (dict) — matches data/wardrobe_schema.json: {"items": [...]}, where e
 outfit (list of str) — the output of suggest_outfit
 new_item (dict) — the same listing dict passed to suggest_outfit
 - **Returns:** A single string — the caption text.
-- **When it has nothing:** If outfit is an empty list, returns a caption built from new_item alone (title, brand if not None, colors) rather than failing.
+- **When it has nothing:** If outfit is an empty or whitespace-only string, returns a descriptive fallback caption built from new_item alone (title, price, platform) rather than failing.
 
 ---
 
@@ -131,17 +131,38 @@ $ python app.py ask '...'
 $ python -c "from tools import search_listings; print(search_listings('graphic tee', max_price=30))"
 
 ```
+[{'id': 'lst_002', 'title': 'Y2K Baby Tee — Butterfly Print', 'description': 'Super cute early 2000s baby tee with butterfly graphic. Fitted crop length. Tag says medium but fits like a small.', 'category': 'tops', 'style_tags': ['y2k', 'vintage', 'graphic tee', 'cottagecore'], 'size': 'S/M', 'condition': 'excellent', 'price': 18.0, 'colors': ['white', 'pink', 'purple'], 'brand': None, 'platform': 'depop'}, {'id': 'lst_006', 'title': 'Graphic Tee — 2003 Tour Bootleg Style', 'description': 'Vintage-style bootleg tee with faded graphic. Slightly boxy fit. 100% cotton, soft and worn-in.', 'category': 'tops', 'style_tags': ['graphic tee', 'vintage', 'grunge', 'streetwear', 'band tee'], 'size': 'L', 'condition': 'good', 'price': 24.0, 'colors': ['black'], 'brand': None, 'platform': 'depop'}, {'id': 'lst_017', 'title': 'Mesh Long-Sleeve Top — Black', 'description': 'Sheer black mesh long-sleeve. Great for layering under a graphic tee or over a bralette. Stretchy material, fits true to size.', 'category': 'tops', 'style_tags': ['y2k', 'grunge', 'goth', 'layering'], 'size': 'S/M', 'condition': 'excellent', 'price': 15.0, 'colors': ['black'], 'brand': None, 'platform': 'depop'}, {'id': 'lst_033', 'title': 'Vintage Band Tee — Faded Grey', 'description': 'Faded grey band-style tee with distressed graphic. Crew neck. Fits boxy. Well-loved but no holes or major damage.', 'category': 'tops', 'style_tags': ['vintage', 'grunge', 'band tee', 'graphic tee', 'streetwear'], 'size': 'L', 'condition': 'fair', 'price': 19.0, 'colors': ['grey', 'charcoal'], 'brand': None, 'platform': 'depop'}, {'id': 'lst_011', 'title': 'Low-Rise Cargo Pants — Khaki', 'description': 'Y2K era low-rise cargo pants. Lots of pockets. Khaki color, slightly distressed at the hems. Great for layering with a long tee.', 'category': 'bottoms', 'style_tags': ['y2k', 'cargo', '2000s', 'streetwear'], 'size': 'W29', 'condition': 'fair', 'price': 27.0, 'colors': ['khaki', 'tan'], 'brand': None, 'platform': 'poshmark'}, {'id': 'lst_015', 'title': 'Vintage Graphic Hoodie — Faded Black', 'description': 'Faded black pullover hoodie with barely-visible vintage graphic on the chest. Cozy interior. Some pilling but adds to the worn-in look.', 'category': 'tops', 'style_tags': ['vintage', 'grunge', 'graphic', 'streetwear'], 'size': 'L', 'condition': 'fair', 'price': 26.0, 'colors': ['black', 'charcoal'], 'brand': None, 'platform': 'depop'}]
 
 ```
 $ python -c "from tools import suggest_outfit; ..."
 
 ```
+Here are two specific outfits using the vintage Levi's 501 jeans and pieces from their existing wardrobe:
+
+**Outfit 1: Casual Streetwear**
+* **Bottoms:** Vintage Levi's 501 Jeans
+* **Top:** White ribbed tank top
+* **Outerwear:** Vintage black denim jacket (worn over the tank)
+* **Shoes:** Chunky white sneakers
+* **Accessories:** Black crossbody bag
+
+*Why it works:* This is a classic, effortless combination. The fitted white tank balances the straight-leg fit of the 501s, while the black denim jacket layered on top adds a cool, vintage double-denim aesthetic that ties into their streetwear style.
+
+**Outfit 2: Cozy & Edgy**
+* **Bottoms:** Vintage Levi's 501 Jeans
+* **Top:** Oversized grey crewneck sweatshirt
+* **Shoes:** Black combat boots
+* **Accessories:** Brown leather belt and black crossbody bag
+
+*Why it works:* Pairing the oversized grey crewneck with the structured medium-wash 501s creates a great proportion play (baggy on top, straight-leg on bottom). Tucking the front of the sweatshirt in with the brown leather belt pulls the look together, and the black combat boots add a nice grunge edge.
 
 ```
 $ python -c "from tools import create_fit_card; ..."
 
 ```
+I am literally shaking, I just scored these vintage Levi's 501 jeans on Depop for only $38! Medium wash is honestly the holy grail, and I can't wait to live in these with just a simple white tee and sneakers. My lucky streak continues! ✨👖
 
+```
 ---
 
 ## How I Used AI
@@ -155,15 +176,15 @@ $ python -c "from tools import create_fit_card; ..."
 
 **Moment 1**
 
-- *What I asked for:*
-- *What came back:*
-- *What I changed:*
+- *What I asked for:* I used Claude to help me figure out why one test case failed while the rest passed and how to make sure all the test cases passed.
+- *What came back:* Claude said that 9/10 test cases passing meant that the environment was fine and asked for the exact output that I was seeing in terminal
+- *What I changed:* I realised that I was using an older version of python and had to install the latest version so all the test cases could pass.
 
 **Moment 2**
 
-- *What I asked for:*
-- *What came back:*
-- *What I changed:*
+- *What I asked for:* I gave Claude the 3 criteria that I came up with for the criteria.md file and asked how to make it more specific and if there was any ambiguity.
+- *What came back:* Claude told me how to test each one, along with narrowing down an actual contradiction in criteria 5
+- *What I changed:* I decided to follow Claude and changed my criteria so there was no contradiction. 
 
 <!-- ═══════════════════════ UNIT 4 — THE TEST ═══════════════════════
 
